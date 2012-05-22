@@ -1,0 +1,10 @@
+%% -*- mode: erlang; -*-
+{application, bookshelf_wi,
+ [{description  , "Bookshelf Rest Interface: Amazon S3 Compatible"
+   "Object Store Rest API"},
+  {vsn, "0.0.1"},
+  {mod, {bksw_app, []}},
+  {registered, [bksw_sup]},
+  {applications , [kernel, stdlib, sasl, crypto,
+                   public_key, ssl, cowboy, erlsom, bookshelf_store,
+                   inets]}]}.
