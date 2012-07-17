@@ -35,11 +35,11 @@ bucket_server_exists(BucketName) ->
     gproc:where({n,l,BucketName}) =/= undefined.
 
 lock_path(BucketName, Path) ->
-    {Pid, _} = gproc:await({n,l,BucketName}, ?WAIT_TIMEOUT),
+    Pid = gproc:where({n,l,BucketName}),
     gen_server:cast(Pid, {lock, Path}).
 
 unlock_path(BucketName, Path) ->
-    {Pid, _} = gproc:await({n,l,BucketName}, ?WAIT_TIMEOUT),
+    Pid = gproc:where({n,l,BucketName}),
     gen_server:cast(Pid, {unlock, Path}).
 
 %% %%%===================================================================
@@ -123,7 +123,7 @@ handle_call({obj_recv, Path, Trans, Buffer, Length}, From, State = #state{bucket
                          {noreply, state()}.
 handle_cast({lock, Path}, State = #state{locks = Locks}) ->
     {noreply, State#state{locks = sets:add_element(Path, Locks)}};
-handle_cast({unlock, Path}, State = #state{locks = Locks0, work_queue = WQ}) ->
+handle_cast({unlock, Path}, State = #state{locks = Locks0, work_queue = WQ, bucket_name=BucketName}) ->
     Locks1 = sets:del_element(Path, Locks0),
     State1 = case dict:find(Path, WQ) of
                  {ok, []} ->
@@ -160,17 +160,18 @@ is_locked(Path, #state{locks=Locks}) ->
 -spec queue_work(bookshelf_store:path(), (fun(() -> ok)) |
                  bkss_obj_worker:work(), state()) -> state().
 queue_work(Path, Work, State = #state{locks = Locked,
+                                      bucket_name=Bucket,
                                       work_queue = WorkQueue}) ->
     case is_locked(Path, State) of
         false ->
-            case erlang:is_function(Work) of
-                true ->
-                    Work();
-                false ->
-                    bkss_obj_sup:start_child(Work)
-            end,
+            bkss_obj_sup:start_child(prepare_work(Bucket, Path, Work)),
             State#state{locks = sets:add_element(Path, Locked)};
         true ->
             %% Add the work onto the back, so the we get a FIFO queue
             State#state{work_queue =  dict:append(Path, Work, WorkQueue)}
     end.
+
+prepare_work(Bucket, Path, Work) when is_function(Work) ->
+    {function, undefined, [Work, Bucket, Path]};
+prepare_work(_Bucket, _Path, Work) ->
+    Work.
