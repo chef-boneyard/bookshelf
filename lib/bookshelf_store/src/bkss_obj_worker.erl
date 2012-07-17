@@ -24,6 +24,9 @@
 start_link(Work) ->
     proc_lib:spawn_link(fun() -> do_work(Work) end).
 
+do_work({function, undefined, [Work, BucketName, Path]}) ->
+    Work(),
+    bkss_bucket_server:unlock_path(BucketName, Path);
 do_work({obj_list, From, [BucketName, Store]}) ->
     gen_server:reply(From, bkss_store:obj_list(Store, BucketName));
 do_work({obj_exists, From, [BucketName, Store, Path]}) ->
