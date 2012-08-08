@@ -59,8 +59,8 @@ write_path(Bucket, Path) ->
 write_path(Entry) when is_binary(Entry) ->
     list_to_binary(write_path(binary_to_list(Entry)));
 write_path(Entry) when is_list(Entry) ->
-    {_, _, T} = erlang:now(),
-    FileName = lists:flatten([Entry, io_lib:format("._bkwbuf_~p", [T])]),
+    {Meg, S, Mu} = erlang:now(),
+    FileName = lists:flatten([Entry, io_lib:format("._bkwbuf_~p.~p.~p", [Meg, S, Mu])]),
     case filelib:wildcard(FileName) of
         [] ->
             FileName;
