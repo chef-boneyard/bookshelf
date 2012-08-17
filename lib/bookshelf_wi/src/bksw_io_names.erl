@@ -24,15 +24,15 @@ decode(Data) when is_binary(Data) ->
 decode(Data) when is_list(Data) ->
     http_uri:decode(Data).
 
-bucket_path(Bucket) ->
+bucket_path(Bucket) when Bucket =/= <<>> ->
     Root = bksw_conf:disk_store(),
     filename:join([Root, encode(Bucket)]).
 
-entry_path(BucketEntryPath) ->
+entry_path(BucketEntryPath) when BucketEntryPath =/= <<>> ->
     Root = bksw_conf:disk_store(),
     filename:join([Root, BucketEntryPath]).
 
-entry_path(Bucket, Entry) ->
+entry_path(Bucket, Entry) when Bucket =/= <<>> andalso Entry =/= <<>> ->
     Root = bksw_conf:disk_store(),
     filename:join([Root, encode(Bucket), encode(Entry)]).
 
@@ -59,8 +59,8 @@ write_path(Bucket, Path) ->
 write_path(Entry) when is_binary(Entry) ->
     list_to_binary(write_path(binary_to_list(Entry)));
 write_path(Entry) when is_list(Entry) ->
-    {_, _, T} = erlang:now(),
-    FileName = lists:flatten([Entry, io_lib:format("._bkwbuf_~p", [T])]),
+    {Meg, S, Mu} = erlang:now(),
+    FileName = lists:flatten([Entry, io_lib:format("._bkwbuf_~p.~p.~p", [Meg, S, Mu])]),
     case filelib:wildcard(FileName) of
         [] ->
             FileName;
