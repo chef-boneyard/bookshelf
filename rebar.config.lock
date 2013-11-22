@@ -28,7 +28,7 @@
                    "169cffd94759e99e2e8870b125861a91e3c1482a"}},
        {mini_s3,".*",
                 {git,"git://github.com/opscode/mini_s3.git",
-                     "ddeaa30687918706eb70f2b380ecbc2d7fbe53d2"}},
+                     "ed42875aefe598e8a31145d1482ac08827c2e9f6"}},
        {mixer,".*",
               {git,"git://github.com/opscode/mixer.git",
                    "58ded93d5c47675899d8e5e1589270f340ea66c5"}},
