@@ -43,7 +43,8 @@
                                     "758d1cf4cc79483e1fbaf2ea59ed9e9f76b4a012"}},
        {webmachine,".*",
                    {git,"git://github.com/opscode/webmachine",
-                        "eb6633593be10977399fcf8abb036faef4c5fba2"}}]}.
+                        "aa0d0f8e03e14e7fefc9e092c1c3535182c87ef6"}}]}.
+
 {erl_opts,[debug_info,warnings_as_errors]}.
 {xref_checks,[exports_not_used,undefined_function_calls]}.
 {plugins,[rebar_lock_deps_plugin]}.
