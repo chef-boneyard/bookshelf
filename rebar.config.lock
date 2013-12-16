@@ -43,7 +43,7 @@
                                     "758d1cf4cc79483e1fbaf2ea59ed9e9f76b4a012"}},
        {webmachine,".*",
                    {git,"git://github.com/opscode/webmachine",
-                        "6ce70393009446191af4771671712ffa0f1c83eb"}}]}.
+                        "7cd6ddf592a2e050544891d151944dd3017dc517"}}]}.
 
 {erl_opts,[debug_info,warnings_as_errors]}.
 {xref_checks,[exports_not_used,undefined_function_calls]}.
