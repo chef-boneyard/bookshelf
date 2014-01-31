@@ -125,18 +125,8 @@ init([]) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_call({random_get}, _From, State) ->
-    random_url(get, State);
-
-handle_call({random_put}, _From, State) ->
-    random_url(put, State);
-
-handle_call({random_data}, _From, #state{checksums = Checksums,
-                                         num_checksums = NumChecksums} = State) ->
-    Index = random:uniform(NumChecksums),
-    Size = lists:nth(Index, Checksums),
-    Data = crypto:rand_bytes(Size),
-    {reply, Data, State};
+handle_call({get_state}, _From, State) ->
+    {reply, State, State};
 
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -197,19 +187,28 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 
+get_state() ->
+    gen_server:call(?MODULE, {get_state}).
+
 random_get(_ID) ->
+    State = get_state(),
     fun() ->
-            gen_server:call(?MODULE, {random_get})
+            random_url(get, State)
     end.
 
 random_put(_ID) ->
+    State = get_state(),
     fun() ->
-            gen_server:call(?MODULE, {random_put})
+            random_url(put, State)
     end.
 
 random_data(_ID) ->
+    #state{checksums = Checksums,
+           num_checksums = NumChecksums} = get_state(),
     fun() ->
-            gen_server:call(?MODULE, {random_data})
+            Index = random:uniform(NumChecksums),
+            Size = lists:nth(Index, Checksums),
+            crypto:rand_bytes(Size)
     end.
 
 random_url(Method, #state{checksums = Checksums,
@@ -224,8 +223,7 @@ random_url(Method, #state{checksums = Checksums,
                              [],
                              S3Config),
     "http://localhost:4321/bookshelf/" ++ S3Path = binary_to_list(FullUrl),
-    {reply, S3Path, State}.
-
+    S3Path.
 
 parse_distro_file(FileName) ->
     case file:open(FileName, [read]) of
