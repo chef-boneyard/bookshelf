@@ -94,18 +94,17 @@ init([]) ->
     %% todo:
     %% this is ugly here, but we need to get ibrowse started
     ok = application:start(ibrowse),
+    ok = application:start(crypto),
+    ok = application:start(public_key),
+    ok = application:start(ssl),
     ibrowse_http_client:start({"localhost", 4321}),
 
-    %% create all of the checksums in our bucket
-    [begin
-         Data = crypto:rand_bytes(Size),
-         mini_s3:put_object("bookshelf",           % bucket name
-                            integer_to_list(Size), % key
-                            Data,                  % object data
-                            [],                    % options
-                            [],                    % headers
-                            S3Config)              % config
-     end || Size <- ChecksumSizes],
+    case basho_bench_config:get(preseed_data) of
+        true ->
+            preseed_data(S3Config, ChecksumSizes);
+        _ ->
+            ok
+    end,
 
     {ok, #state{checksums = ChecksumSizes,
                 num_checksums = NumChecksums,
@@ -222,8 +221,21 @@ random_url(Method, #state{checksums = Checksums,
                              30,
                              [],
                              S3Config),
-    "http://localhost:4321/bookshelf/" ++ S3Path = binary_to_list(FullUrl),
-    S3Path.
+    binary_to_list(FullUrl).
+    %% "https://33.33.33.10:443/bookshelf/" ++ S3Path = binary_to_list(FullUrl),
+    %% S3Path.
+
+preseed_data(S3Config, ChecksumSizes) ->
+    %% create all of the checksums in our bucket
+    [begin
+         Data = crypto:rand_bytes(Size),
+         mini_s3:put_object("bookshelf",           % bucket name
+                            integer_to_list(Size), % key
+                            Data,                  % object data
+                            [],                    % options
+                            [],                    % headers
+                            S3Config)              % config
+     end || Size <- ChecksumSizes].
 
 parse_distro_file(FileName) ->
     case file:open(FileName, [read]) of
