@@ -340,7 +340,7 @@ at_the_same_time(Config) when is_list(Config) ->
     BucketContents = mini_s3:list_objects(Bucket, [], S3Conf),
     ?assertEqual(Bucket, proplists:get_value(name, BucketContents)),
     ?assertEqual([], proplists:get_value(contents, BucketContents)),
-    Count = 100,
+    Count = 50,
     BigData = list_to_binary(lists:duplicate(2000000, 2)),
     Key = filename:join(random_binary(), random_binary()),
     error_logger:info_report({at_the_same_time, key, Key}),
